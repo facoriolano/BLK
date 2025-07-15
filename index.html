@@ -3,233 +3,180 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>BlackRock Evaluation</title>
-  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <title>Gráfico Manual BlackRock - Exemplo</title>
+  <script src="<https://cdn.jsdelivr.net/npm/apexcharts>"></script>
   <style>
     body {
-      background: #1a1a1a;
+      background: #121212;
       color: #eee;
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 20px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 20px;
     }
-
     .container {
       max-width: 900px;
       margin: auto;
-      background: #222;
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 0 20px #ff4c4c33;
+      background: #1c1c1c;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px #ff4c4c55;
     }
-
-    h1 {
-      margin-top: 0;
-      font-size: 1.5rem;
-      color: #fff;
+    h2 {
+      color: #ff4c4c;
+      margin-bottom: 5px;
     }
-
-    .price-box {
-      font-size: 2rem;
+    .price {
+      font-size: 3rem;
       font-weight: bold;
-      margin-top: 10px;
+      margin: 0;
     }
-
     .change {
-      font-size: 1rem;
-      margin-left: 10px;
-      color: #f55;
+      color: #ff4c4c;
+      font-weight: 600;
+      margin-bottom: 15px;
     }
-
-    .buttons {
-      margin-top: 20px;
-    }
-
-    .buttons button {
-      background: #333;
-      border: none;
-      color: #ccc;
-      padding: 8px 14px;
-      border-radius: 8px;
-      margin: 0 5px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .buttons button.active,
-    .buttons button:hover {
-      background: #ff4c4c;
-      color: #fff;
-    }
-
     #chart {
       margin-top: 20px;
     }
-
     .info-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-top: 20px;
-      border-top: 1px solid #444;
-      padding-top: 10px;
-    }
-
-    .info-item {
-      font-size: 0.85rem;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 15px;
+      margin-top: 25px;
+      border-top: 1px solid #333;
+      padding-top: 15px;
       color: #ccc;
     }
-
-    .label {
+    .info-item {
+      font-size: 0.9rem;
+    }
+    .info-label {
       font-weight: 600;
-      color: #999;
+      display: block;
+      margin-bottom: 5px;
+      color: #aaa;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>BlackRock Inc. (BLK)</h1>
-    <div class="price-box">
-      $<span id="price">0.00</span>
-      <span class="change" id="change">--</span>
-    </div>
+    <h2>BlackRock Inc. (BLK)</h2>
+    <p class="price" id="price">$1,042.94</p>
+    <p class="change" id="change">- $68.52 (-6.16%) Today</p>
 
-    <div class="buttons">
-      <button data-range="1D">1D</button>
-      <button data-range="1W">1W</button>
-      <button data-range="1M">1M</button>
-      <button data-range="6M">6M</button>
-      <button data-range="1Y">1Y</button>
-      <button data-range="5Y">5Y</button>
-      <button data-range="MAX">MAX</button>
-    </div>
-
+    <!-- Gráfico -->
     <div id="chart"></div>
 
+    <!-- Informações adicionais -->
     <div class="info-grid">
-      <div class="info-item"><div class="label">Open</div><div id="open">--</div></div>
-      <div class="info-item"><div class="label">Day Low</div><div id="low">--</div></div>
-      <div class="info-item"><div class="label">Day High</div><div id="high">--</div></div>
-      <div class="info-item"><div class="label">Volume</div><div id="volume">--</div></div>
-      <div class="info-item"><div class="label">Year Low</div><div id="yearLow">--</div></div>
-      <div class="info-item"><div class="label">Year High</div><div id="yearHigh">--</div></div>
+      <div class="info-item">
+        <span class="info-label">Open</span>
+        <span id="open">1,070.85</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Volume</span>
+        <span id="volume">900.2K</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Day Low</span>
+        <span id="dayLow">1,033.67</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Day High</span>
+        <span id="dayHigh">1,133.00</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Year Low</span>
+        <span id="yearLow">773.74</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Year High</span>
+        <span id="yearHigh">1,112.13</span>
+      </div>
     </div>
   </div>
 
   <script>
-    // 🔧 Edite os dados aqui: valores manuais para cada range
-    const dataset = {
-      "1D": [
-        { x: new Date("2025-07-12T10:00:00").getTime(), y: 1055 },
-        { x: new Date("2025-07-12T10:30:00").getTime(), y: 1043 },
-        { x: new Date("2025-07-12T11:00:00").getTime(), y: 1033 },
-        { x: new Date("2025-07-12T11:30:00").getTime(), y: 1042 },
-      ],
-      "1W": [
-        { x: new Date("2025-07-08").getTime(), y: 1070 },
-        { x: new Date("2025-07-09").getTime(), y: 1052 },
-        { x: new Date("2025-07-10").getTime(), y: 1040 },
-        { x: new Date("2025-07-11").getTime(), y: 1035 },
-        { x: new Date("2025-07-12").getTime(), y: 1042 },
-      ],
-      "1M": [
-        { x: new Date("2025-06-12").getTime(), y: 1090 },
-        { x: new Date("2025-06-19").getTime(), y: 1060 },
-        { x: new Date("2025-06-26").getTime(), y: 1040 },
-        { x: new Date("2025-07-12").getTime(), y: 1042 },
-      ],
-      // Adicione outros ranges abaixo:
-      "6M": [],
-      "1Y": [],
-      "5Y": [],
-      "MAX": [],
-    };
+    // Carrega dados de blz.json e cria o gráfico
+    fetch('blz.json')
+      .then(res => res.json())
+      .then(data => {
+        // Converte cada item para o formato que o ApexCharts entende
+        const seriesData = data.map(item => ({
+          x: new Date(item.date).getTime(),
+          y: item.close
+        }));
 
-    let chart;
+        // Encontra o maior e menor valor para ajustar o eixo Y
+        const valores = data.map(item => item.close);
+        const max = Math.max(...valores) + 5;
+        const min = Math.min(...valores) - 5;
 
-    const options = {
-      chart: {
-        type: "area",
-        height: 320,
-        toolbar: { show: false },
-        background: "#222",
-        foreColor: "#ccc"
-      },
-      stroke: {
-        curve: "smooth",
-        colors: ["#ff4c4c"]
-      },
-      fill: {
-        type: "gradient",
-        gradient: {
-          shadeIntensity: 1,
-          opacityFrom: 0.4,
-          opacityTo: 0.05,
-          stops: [0, 100]
-        },
-        colors: ["#ff4c4c"]
-      },
-      tooltip: {
-        theme: "dark",
-        x: { format: "dd MMM HH:mm" }
-      },
-      xaxis: {
-        type: "datetime"
-      },
-      series: [{
-        name: "Preço",
-        data: []
-      }]
-    };
+        // Define as configurações do gráfico
+        const options = {
+          chart: {
+            type: 'area',
+            height: 300,
+            background: '#1c1c1c',
+            foreColor: '#eee',
+            toolbar: { show: false },
+            zoom: { enabled: false },
+            animations: { enabled: true }
+          },
+          series: [{
+            name: 'Preço',
+            data: seriesData
+          }],
+          xaxis: {
+            type: 'datetime',
+            labels: {
+              datetimeUTC: false,
+              format: 'dd MMM'
+            },
+            tickAmount: 6,
+            axisBorder: { color: '#555' },
+            axisTicks: { color: '#555' },
+          },
+          yaxis: {
+            labels: {
+              formatter: val => val.toFixed(0),
+              style: { colors: '#777' }
+            },
+            min: min,
+            max: max
+          },
+          stroke: {
+            curve: 'smooth',
+            colors: ['#ff4c4c'],
+            width: 2
+          },
+          fill: {
+            type: 'gradient',
+            gradient: {
+              shade: 'dark',
+              gradientToColors: ['#660000'],
+              stops: [0, 100],
+              opacityFrom: 0.7,
+              opacityTo: 0.1,
+            }
+          },
+          tooltip: {
+            theme: 'dark',
+            x: { format: 'dd MMM yyyy' },
+            y: { formatter: val => `$${val.toFixed(2)}` }
+          },
+          grid: {
+            borderColor: '#333'
+          }
+        };
 
-    chart = new ApexCharts(document.querySelector("#chart"), options);
-    chart.render();
-
-    function updateChart(range) {
-      const data = dataset[range] || [];
-
-      if (data.length === 0) {
-        alert("Sem dados para este período.");
-        return;
-      }
-
-      // Atualiza o gráfico
-      chart.updateSeries([{ data }]);
-
-      // Preço atual = último ponto
-      const last = data[data.length - 1];
-      const first = data[0];
-      const change = last.y - first.y;
-      const percent = (change / first.y) * 100;
-
-      document.getElementById("price").textContent = last.y.toFixed(2);
-      const changeEl = document.getElementById("change");
-      changeEl.textContent = `${change >= 0 ? "+" : "-"}$${Math.abs(change).toFixed(2)} (${percent.toFixed(2)}%)`;
-      changeEl.style.color = change >= 0 ? "#00ff99" : "#ff4c4c";
-
-      // Atualiza os outros campos (apenas simulados para fins visuais)
-      document.getElementById("open").textContent = first.y.toFixed(2);
-      document.getElementById("low").textContent = Math.min(...data.map(p => p.y)).toFixed(2);
-      document.getElementById("high").textContent = Math.max(...data.map(p => p.y)).toFixed(2);
-      document.getElementById("volume").textContent = "900.2K";
-      document.getElementById("yearLow").textContent = "773.74";
-      document.getElementById("yearHigh").textContent = "1112.13";
-
-      // Botão ativo
-      document.querySelectorAll(".buttons button").forEach(b => b.classList.remove("active"));
-      document.querySelector(`.buttons button[data-range="${range}"]`).classList.add("active");
-    }
-
-    // Eventos dos botões
-    document.querySelectorAll(".buttons button").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const range = btn.getAttribute("data-range");
-        updateChart(range);
+        // Renderiza o gráfico com os dados carregados
+        const chart = new ApexCharts(document.querySelector('#chart'), options);
+        chart.render();
+      })
+      .catch(err => {
+        document.querySelector('#chart').innerText = 'Erro ao carregar blz.json';
+        console.error('Erro ao carregar JSON:', err);
       });
-    });
-
-    // Inicializa com 1D
-    updateChart("1D");
   </script>
 </body>
 </html>
