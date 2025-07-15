@@ -1,15 +1,27 @@
-const API_KEY = 'SWVBFX4JQD7TR22Y';  // sua chave
-const symbol = 'BLK';                // símbolo da BlackRock
+const API_KEY = 'SWVBFX4JQD7TR22Y';
+const symbol = 'BLK';
 let chart;
 
-// Busca dados do Alpha Vantage
+function subtractDays(date, days) {
+  const result = new Date(date);
+  result.setDate(result.getDate() - days);
+  return result;
+}
+
 async function fetchData(range) {
-  let func = (range === '1d') ? 'TIME_SERIES_INTRADAY' : 'TIME_SERIES_DAILY_ADJUSTED';
-  let interval = (range === '1d') ? '&interval=5min' : '';
-  let url = `https://www.alphavantage.co/query?function=${func}&symbol=${symbol}${interval}&apikey=${API_KEY}&outputsize=compact`;
+  let func = 'TIME_SERIES_DAILY_ADJUSTED';
+  let interval = '';
+
+  if (range === '1d') {
+    func = 'TIME_SERIES_INTRADAY';
+    interval = '&interval=5min';
+  } 
+
+  let url = `https://www.alphavantage.co/query?function=${func}&symbol=${symbol}${interval}&apikey=${API_KEY}&outputsize=full`;
 
   const res = await fetch(url);
   const data = await res.json();
+
   const ts = (func === 'TIME_SERIES_INTRADAY')
     ? data['Time Series (5min)']
     : data['Time Series (Daily)'];
@@ -19,15 +31,39 @@ async function fetchData(range) {
     return [];
   }
 
-  return Object.entries(ts)
-    .map(([date, vals]) => ({
-      x: new Date(date),
-      y: parseFloat(vals['4. close'])
-    }))
-    .sort((a, b) => a.x - b.x);
+  let arr = Object.entries(ts).map(([date, vals]) => ({
+    x: new Date(date),
+    y: parseFloat(vals['4. close'])
+  }));
+
+  arr.sort((a, b) => a.x - b.x);
+
+  const now = new Date();
+  let filtered;
+
+  switch (range) {
+    case '1d':
+      filtered = arr;
+      break;
+    case '5d':
+      filtered = arr.filter(point => point.x >= subtractDays(now, 5));
+      break;
+    case '1mo':
+      filtered = arr.filter(point => point.x >= subtractDays(now, 30));
+      break;
+    case '6mo':
+      filtered = arr.filter(point => point.x >= subtractDays(now, 180));
+      break;
+    case '1y':
+      filtered = arr.filter(point => point.x >= subtractDays(now, 365));
+      break;
+    default:
+      filtered = arr;
+  }
+
+  return filtered;
 }
 
-// Exibe o gráfico
 function renderChart(data) {
   const options = {
     chart: {
@@ -62,11 +98,10 @@ function renderChart(data) {
     chart = new ApexCharts(document.querySelector('#chart'), options);
     chart.render();
   } else {
-    chart.updateOptions(options);
+    chart.updateSeries([{ data }]);
   }
 }
 
-// Botões de filtro (1D, 5D, etc.)
 async function update(range) {
   const data = await fetchData(range);
   if (data.length > 0) {
@@ -74,10 +109,8 @@ async function update(range) {
   }
 }
 
-// Event listeners
 document.querySelectorAll('button').forEach(btn =>
   btn.addEventListener('click', () => update(btn.dataset.range))
 );
 
-// Carrega o gráfico inicial
 update('1d');
