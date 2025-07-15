@@ -253,6 +253,7 @@ async function updateChart() {
 document.querySelectorAll('.buttons button[data-range]').forEach(btn => {
   btn.addEventListener('click', () => {
     selectedRange = btn.getAttribute('data-range');
+    updateChart();  // <- chama atualização ao clicar no intervalo
   });
 });
 
