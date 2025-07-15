@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Gráfico BlackRock Dinâmico Manual</title>
+<title>Gráfico Manual BlackRock - Exemplo</title>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <style>
   body {
@@ -22,316 +22,156 @@
   }
   h2 {
     color: #ff4c4c;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
   }
   .price {
-    font-size: 2.5rem;
+    font-size: 3rem;
     font-weight: bold;
+    margin: 0;
   }
   .change {
-    font-weight: 600;
-    margin-left: 1rem;
-  }
-  .change.positive {
-    color: #00ff00;
-  }
-  .change.negative {
     color: #ff4c4c;
-  }
-  .buttons {
-    margin: 15px 0;
-  }
-  button {
-    background: #330000;
-    border: 2px solid #ff4c4c;
-    color: #ff4c4c;
-    padding: 6px 15px;
-    margin-right: 10px;
-    border-radius: 8px;
     font-weight: 600;
-    cursor: pointer;
-    transition: background 0.3s ease, border-color 0.3s ease;
-  }
-  button:hover:not(:disabled) {
-    background: #ff4c4c;
-    color: #121212;
-  }
-  button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  button.active {
-    border-color: orange;
-    color: orange;
+    margin-bottom: 15px;
   }
   #chart {
     margin-top: 20px;
   }
   .info-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    margin-top: 20px;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 15px;
+    margin-top: 25px;
     border-top: 1px solid #333;
-    padding-top: 10px;
+    padding-top: 15px;
+    color: #ccc;
   }
   .info-item {
     font-size: 0.9rem;
-    color: #ccc;
   }
   .info-label {
     font-weight: 600;
+    display: block;
+    margin-bottom: 5px;
+    color: #aaa;
   }
 </style>
 </head>
 <body>
   <div class="container">
     <h2>BlackRock Inc. (BLK)</h2>
-    <div>
-      <span class="price" id="price">$--.--</span>
-      <span class="change" id="change">--</span>
-    </div>
-    <div class="buttons">
-      <button data-range="1d" class="active">1D</button>
-      <button data-range="5d">5D</button>
-      <button data-range="1m">1M</button>
-      <button data-range="6m">6M</button>
-      <button data-range="ytd">YTD</button>
-      <button data-range="1y">1Y</button>
-      <button data-range="5y">5Y</button>
-      <button id="btnUpdate">Atualizar</button>
-    </div>
+    <!-- Preço Atual -->
+    <p class="price" id="price">$1,042.94</p>
+    <!-- Variação do Dia -->
+    <p class="change" id="change">- $68.52 (-6.16%) Today</p>
+
+    <!-- Gráfico -->
     <div id="chart"></div>
+
+    <!-- Informações adicionais -->
     <div class="info-grid">
-      <div class="info-item"><span class="info-label">Open</span><br><span id="open">--</span></div>
-      <div class="info-item"><span class="info-label">Volume</span><br><span id="volume">--</span></div>
-      <div class="info-item"><span class="info-label">Day Low</span><br><span id="dayLow">--</span></div>
-      <div class="info-item"><span class="info-label">Day High</span><br><span id="dayHigh">--</span></div>
-      <div class="info-item"><span class="info-label">Year Low</span><br><span id="yearLow">--</span></div>
-      <div class="info-item"><span class="info-label">Year High</span><br><span id="yearHigh">--</span></div>
+      <div class="info-item">
+        <span class="info-label">Open</span>
+        <span id="open">1,070.85</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Volume</span>
+        <span id="volume">900.2K</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Day Low</span>
+        <span id="dayLow">1,033.67</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Day High</span>
+        <span id="dayHigh">1,133.00</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Year Low</span>
+        <span id="yearLow">773.74</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Year High</span>
+        <span id="yearHigh">1,112.13</span>
+      </div>
     </div>
   </div>
 
 <script>
-const API_KEY = 'SWVBFX4JQD7TR22Y';
-const symbol = 'BLK';
-let chart;
-let selectedRange = '1d';
-let stockData = {};
+  // Dados do gráfico - você pode modificar esses valores manualmente aqui:
+  // Cada ponto é um objeto com x (timestamp) e y (preço de fechamento)
+  const dataPoints = [
+    { x: new Date('2025-07-15T09:30:00').getTime(), y: 1060 },
+    { x: new Date('2025-07-15T09:45:00').getTime(), y: 1050 },
+    { x: new Date('2025-07-15T10:00:00').getTime(), y: 1045 },
+    { x: new Date('2025-07-15T10:15:00').getTime(), y: 1040 },
+    { x: new Date('2025-07-15T10:30:00').getTime(), y: 1048 },
+    { x: new Date('2025-07-15T10:45:00').getTime(), y: 1037 },
+    { x: new Date('2025-07-15T11:00:00').getTime(), y: 1035 },
+    { x: new Date('2025-07-15T11:15:00').getTime(), y: 1043 },
+  ];
 
-// Função para criar ou atualizar gráfico
-function createChart(data) {
+  // Configurações do ApexCharts para gráfico de área com degradê
   const options = {
     chart: {
       type: 'area',
-      height: 350,
+      height: 300,
       background: '#1c1c1c',
       foreColor: '#eee',
       toolbar: { show: false },
-      zoom: { enabled: false }
+      zoom: { enabled: false },
+      animations: { enabled: true }
     },
     series: [{
       name: 'Preço',
-      data: data
+      data: dataPoints
     }],
-    xaxis: { type: 'datetime' },
-    stroke: { curve: 'smooth', colors: ['#ff4c4c'] },
-    fill: { type: 'gradient', gradient: { shade: 'dark', gradientToColors: ['#660000'], stops: [0, 100] } },
-    tooltip: { theme: 'dark' },
+    xaxis: {
+      type: 'datetime',
+      labels: {
+        datetimeUTC: false,
+        format: 'hh:mm a'
+      },
+      tickAmount: 6,
+      axisBorder: { color: '#555' },
+      axisTicks: { color: '#555' },
+    },
+    yaxis: {
+      labels: {
+        formatter: val => val.toFixed(0),
+        style: { colors: '#777' }
+      },
+      min: 1020,
+      max: 1070
+    },
+    stroke: {
+      curve: 'smooth',
+      colors: ['#ff4c4c'],
+      width: 2
+    },
+    fill: {
+      type: 'gradient',
+      gradient: {
+        shade: 'dark',
+        gradientToColors: ['#660000'],
+        stops: [0, 100],
+        opacityFrom: 0.7,
+        opacityTo: 0.1,
+      }
+    },
+    tooltip: {
+      theme: 'dark',
+      x: { format: 'hh:mm a' },
+      y: { formatter: val => `$${val.toFixed(2)}` }
+    },
+    grid: {
+      borderColor: '#333'
+    }
   };
 
-  if (!chart) {
-    chart = new ApexCharts(document.querySelector('#chart'), options);
-    chart.render();
-  } else {
-    chart.updateSeries([{ data }]);
-  }
-}
-
-// Função para buscar dados com cache localStorage (2 minutos)
-async function fetchStockData() {
-  const cacheKey = 'alphaVantageCache_BLK';
-  const cacheExpiry = 120 * 1000; // 2 minutos em ms
-
-  const cached = localStorage.getItem(cacheKey);
-  if (cached) {
-    try {
-      const cachedData = JSON.parse(cached);
-      const age = Date.now() - cachedData.timestamp;
-      if (age < cacheExpiry) {
-        console.log('Usando dados do cache localStorage');
-        return cachedData.data;
-      }
-    } catch {
-      // Ignore erro parse e segue
-    }
-  }
-
-  const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${symbol}&apikey=${API_KEY}&outputsize=full`;
-  const res = await fetch(url);
-  const data = await res.json();
-
-  if (data['Note']) {
-    alert('Limite da API atingido. Aguarde 1 minuto.');
-    return null;
-  }
-  if (!data['Time Series (Daily)']) {
-    alert('Erro ao carregar dados da API');
-    return null;
-  }
-
-  try {
-    localStorage.setItem(cacheKey, JSON.stringify({
-      timestamp: Date.now(),
-      data: data['Time Series (Daily)']
-    }));
-  } catch (e) {
-    console.warn('Erro ao salvar cache:', e);
-  }
-
-  return data['Time Series (Daily)'];
-}
-
-// Função para interpretar dados para o período escolhido
-function parseData(rawData, range) {
-  const entries = Object.entries(rawData).map(([date, vals]) => ({
-    date: new Date(date),
-    open: parseFloat(vals['1. open']),
-    high: parseFloat(vals['2. high']),
-    low: parseFloat(vals['3. low']),
-    close: parseFloat(vals['4. close']),
-    volume: parseInt(vals['6. volume'], 10),
-  }));
-
-  entries.sort((a, b) => a.date - b.date);
-
-  const now = new Date();
-  let startDate;
-
-  switch(range) {
-    case '1d':
-      startDate = new Date(entries[entries.length - 1].date);
-      break;
-    case '5d':
-      startDate = new Date(now);
-      startDate.setDate(now.getDate() - 5);
-      break;
-    case '1m':
-      startDate = new Date(now);
-      startDate.setMonth(now.getMonth() - 1);
-      break;
-    case '6m':
-      startDate = new Date(now);
-      startDate.setMonth(now.getMonth() - 6);
-      break;
-    case 'ytd':
-      startDate = new Date(now.getFullYear(), 0, 1);
-      break;
-    case '1y':
-      startDate = new Date(now);
-      startDate.setFullYear(now.getFullYear() - 1);
-      break;
-    case '5y':
-      startDate = new Date(now);
-      startDate.setFullYear(now.getFullYear() - 5);
-      break;
-    default:
-      startDate = new Date(entries[0].date);
-  }
-
-  const filtered = entries.filter(e => e.date >= startDate);
-
-  if (filtered.length > 0) {
-    const last = filtered[filtered.length - 1];
-    stockData.price = last.close;
-    stockData.change = last.close - (filtered[filtered.length - 2]?.close || last.close);
-    stockData.changePercent = ((stockData.change / (filtered[filtered.length - 2]?.close || last.close)) * 100) || 0;
-    stockData.open = last.open;
-    stockData.volume = last.volume;
-    stockData.dayLow = last.low;
-    stockData.dayHigh = last.high;
-
-    const lastYearDate = new Date(now);
-    lastYearDate.setFullYear(now.getFullYear() - 1);
-    const lastYearEntries = entries.filter(e => e.date >= lastYearDate);
-    stockData.yearLow = Math.min(...lastYearEntries.map(e => e.low));
-    stockData.yearHigh = Math.max(...lastYearEntries.map(e => e.high));
-  }
-
-  return filtered.map(e => ({ x: e.date.getTime(), y: e.close }));
-}
-
-// Atualiza dados visuais abaixo do gráfico
-function updateInfo() {
-  const priceEl = document.getElementById('price');
-  if (stockData.price == null) {
-    priceEl.textContent = '$--.--';
-  } else {
-    priceEl.textContent = `$${stockData.price.toFixed(2)}`;
-  }
-
-  const changeEl = document.getElementById('change');
-  if (stockData.change == null) {
-    changeEl.textContent = '--';
-    changeEl.className = 'change';
-  } else {
-    const sign = stockData.change >= 0 ? '+' : '-';
-    changeEl.textContent = `${sign}$${Math.abs(stockData.change).toFixed(2)} (${sign}${Math.abs(stockData.changePercent).toFixed(2)}%) Today`;
-    changeEl.className = 'change ' + (stockData.change >= 0 ? 'positive' : 'negative');
-  }
-
-  document.getElementById('open').textContent = stockData.open?.toFixed(2) ?? '--';
-  document.getElementById('volume').textContent = stockData.volume?.toLocaleString() ?? '--';
-  document.getElementById('dayLow').textContent = stockData.dayLow?.toFixed(2) ?? '--';
-  document.getElementById('dayHigh').textContent = stockData.dayHigh?.toFixed(2) ?? '--';
-  document.getElementById('yearLow').textContent = stockData.yearLow?.toFixed(2) ?? '--';
-  document.getElementById('yearHigh').textContent = stockData.yearHigh?.toFixed(2) ?? '--';
-}
-
-// Desabilita ou habilita botões durante carregamento
-function setLoading(isLoading) {
-  document.getElementById('btnUpdate').disabled = isLoading;
-  document.querySelectorAll('.buttons button[data-range]').forEach(btn => {
-    btn.disabled = isLoading;
-  });
-
-  const priceEl = document.getElementById('price');
-  if (isLoading) {
-    priceEl.textContent = 'Carregando...';
-  }
-}
-
-// Atualiza gráfico e informações
-async function updateChart() {
-  setLoading(true);
-  const rawData = await fetchStockData();
-  setLoading(false);
-
-  if (!rawData) return;
-
-  const data = parseData(rawData, selectedRange);
-  createChart(data);
-  updateInfo();
-}
-
-// Botões intervalo: muda range, destaca botão ativo, atualiza gráfico
-document.querySelectorAll('.buttons button[data-range]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    selectedRange = btn.getAttribute('data-range');
-
-    // Remove classe active de todos e adiciona no clicado
-    document.querySelectorAll('.buttons button[data-range]').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-
-    updateChart();
-  });
-});
-
-// Botão atualizar manual
-document.getElementById('btnUpdate').addEventListener('click', updateChart);
-
-// Inicia gráfico com dados do range inicial
-updateChart();
+  // Renderiza o gráfico
+  const chart = new ApexCharts(document.querySelector('#chart'), options);
+  chart.render();
 
 </script>
 </body>
