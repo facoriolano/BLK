@@ -96,8 +96,8 @@
   </div>
 
   <script>
-    // Carrega dados de blz.json e cria o gráfico
-    fetch('blz.json')
+    // Carrega dados de blk.json e cria o gráfico
+    fetch('blk.json')
       .then(res => res.json())
       .then(data => {
         // Converte cada item para o formato que o ApexCharts entende
@@ -174,7 +174,7 @@
         chart.render();
       })
       .catch(err => {
-        document.querySelector('#chart').innerText = 'Erro ao carregar blz.json';
+        document.querySelector('#chart').innerText = 'Erro ao carregar blk.json';
         console.error('Erro ao carregar JSON:', err);
       });
   </script>
