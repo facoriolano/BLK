@@ -29,9 +29,14 @@
     font-weight: bold;
   }
   .change {
-    color: #ff4c4c;
     font-weight: 600;
     margin-left: 1rem;
+  }
+  .change.positive {
+    color: #00ff00;
+  }
+  .change.negative {
+    color: #ff4c4c;
   }
   .buttons {
     margin: 15px 0;
@@ -45,11 +50,19 @@
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: background 0.3s ease, border-color 0.3s ease;
   }
-  button:hover {
+  button:hover:not(:disabled) {
     background: #ff4c4c;
     color: #121212;
+  }
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  button.active {
+    border-color: orange;
+    color: orange;
   }
   #chart {
     margin-top: 20px;
@@ -79,7 +92,7 @@
       <span class="change" id="change">--</span>
     </div>
     <div class="buttons">
-      <button data-range="1d">1D</button>
+      <button data-range="1d" class="active">1D</button>
       <button data-range="5d">5D</button>
       <button data-range="1m">1M</button>
       <button data-range="6m">6M</button>
@@ -106,6 +119,7 @@ let chart;
 let selectedRange = '1d';
 let stockData = {};
 
+// Função para criar ou atualizar gráfico
 function createChart(data) {
   const options = {
     chart: {
@@ -134,8 +148,25 @@ function createChart(data) {
   }
 }
 
+// Função para buscar dados com cache localStorage (2 minutos)
 async function fetchStockData() {
-  // Para simplificar, só vai usar TIME_SERIES_DAILY_ADJUSTED e pegar último ano todo
+  const cacheKey = 'alphaVantageCache_BLK';
+  const cacheExpiry = 120 * 1000; // 2 minutos em ms
+
+  const cached = localStorage.getItem(cacheKey);
+  if (cached) {
+    try {
+      const cachedData = JSON.parse(cached);
+      const age = Date.now() - cachedData.timestamp;
+      if (age < cacheExpiry) {
+        console.log('Usando dados do cache localStorage');
+        return cachedData.data;
+      }
+    } catch {
+      // Ignore erro parse e segue
+    }
+  }
+
   const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${symbol}&apikey=${API_KEY}&outputsize=full`;
   const res = await fetch(url);
   const data = await res.json();
@@ -149,9 +180,19 @@ async function fetchStockData() {
     return null;
   }
 
+  try {
+    localStorage.setItem(cacheKey, JSON.stringify({
+      timestamp: Date.now(),
+      data: data['Time Series (Daily)']
+    }));
+  } catch (e) {
+    console.warn('Erro ao salvar cache:', e);
+  }
+
   return data['Time Series (Daily)'];
 }
 
+// Função para interpretar dados para o período escolhido
 function parseData(rawData, range) {
   const entries = Object.entries(rawData).map(([date, vals]) => ({
     date: new Date(date),
@@ -169,7 +210,6 @@ function parseData(rawData, range) {
 
   switch(range) {
     case '1d':
-      // Pega só último dia
       startDate = new Date(entries[entries.length - 1].date);
       break;
     case '5d':
@@ -199,21 +239,18 @@ function parseData(rawData, range) {
       startDate = new Date(entries[0].date);
   }
 
-  // Filtra por data
   const filtered = entries.filter(e => e.date >= startDate);
 
-  // Atualiza dados para info de resumo (baseado no último dia da lista filtrada)
   if (filtered.length > 0) {
     const last = filtered[filtered.length - 1];
     stockData.price = last.close;
-    stockData.change = last.close - filtered[filtered.length - 2]?.close || 0;
-    stockData.changePercent = ((stockData.change / filtered[filtered.length - 2]?.close) * 100) || 0;
+    stockData.change = last.close - (filtered[filtered.length - 2]?.close || last.close);
+    stockData.changePercent = ((stockData.change / (filtered[filtered.length - 2]?.close || last.close)) * 100) || 0;
     stockData.open = last.open;
     stockData.volume = last.volume;
     stockData.dayLow = last.low;
     stockData.dayHigh = last.high;
 
-    // Para yearLow e yearHigh, busca entre os últimos 365 dias
     const lastYearDate = new Date(now);
     lastYearDate.setFullYear(now.getFullYear() - 1);
     const lastYearEntries = entries.filter(e => e.date >= lastYearDate);
@@ -221,17 +258,27 @@ function parseData(rawData, range) {
     stockData.yearHigh = Math.max(...lastYearEntries.map(e => e.high));
   }
 
-  // Mapeia para formato apexcharts
   return filtered.map(e => ({ x: e.date.getTime(), y: e.close }));
 }
 
+// Atualiza dados visuais abaixo do gráfico
 function updateInfo() {
-  document.getElementById('price').textContent = `$${stockData.price.toFixed(2)}`;
+  const priceEl = document.getElementById('price');
+  if (stockData.price == null) {
+    priceEl.textContent = '$--.--';
+  } else {
+    priceEl.textContent = `$${stockData.price.toFixed(2)}`;
+  }
+
   const changeEl = document.getElementById('change');
-  const sign = stockData.change >= 0 ? '+' : '-';
-  const color = stockData.change >= 0 ? '#00ff00' : '#ff4c4c';
-  changeEl.textContent = `${sign}$${Math.abs(stockData.change).toFixed(2)} (${sign}${Math.abs(stockData.changePercent).toFixed(2)}%) Today`;
-  changeEl.style.color = color;
+  if (stockData.change == null) {
+    changeEl.textContent = '--';
+    changeEl.className = 'change';
+  } else {
+    const sign = stockData.change >= 0 ? '+' : '-';
+    changeEl.textContent = `${sign}$${Math.abs(stockData.change).toFixed(2)} (${sign}${Math.abs(stockData.changePercent).toFixed(2)}%) Today`;
+    changeEl.className = 'change ' + (stockData.change >= 0 ? 'positive' : 'negative');
+  }
 
   document.getElementById('open').textContent = stockData.open?.toFixed(2) ?? '--';
   document.getElementById('volume').textContent = stockData.volume?.toLocaleString() ?? '--';
@@ -241,8 +288,25 @@ function updateInfo() {
   document.getElementById('yearHigh').textContent = stockData.yearHigh?.toFixed(2) ?? '--';
 }
 
+// Desabilita ou habilita botões durante carregamento
+function setLoading(isLoading) {
+  document.getElementById('btnUpdate').disabled = isLoading;
+  document.querySelectorAll('.buttons button[data-range]').forEach(btn => {
+    btn.disabled = isLoading;
+  });
+
+  const priceEl = document.getElementById('price');
+  if (isLoading) {
+    priceEl.textContent = 'Carregando...';
+  }
+}
+
+// Atualiza gráfico e informações
 async function updateChart() {
+  setLoading(true);
   const rawData = await fetchStockData();
+  setLoading(false);
+
   if (!rawData) return;
 
   const data = parseData(rawData, selectedRange);
@@ -250,16 +314,23 @@ async function updateChart() {
   updateInfo();
 }
 
+// Botões intervalo: muda range, destaca botão ativo, atualiza gráfico
 document.querySelectorAll('.buttons button[data-range]').forEach(btn => {
   btn.addEventListener('click', () => {
     selectedRange = btn.getAttribute('data-range');
-    updateChart();  // <- chama atualização ao clicar no intervalo
+
+    // Remove classe active de todos e adiciona no clicado
+    document.querySelectorAll('.buttons button[data-range]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    updateChart();
   });
 });
 
+// Botão atualizar manual
 document.getElementById('btnUpdate').addEventListener('click', updateChart);
 
-// Inicializa com dados 1d
+// Inicia gráfico com dados do range inicial
 updateChart();
 
 </script>
